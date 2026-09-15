@@ -1,0 +1,282 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RECapp v0.3.0</title><style>
+:root{--bg:#f4f1ea;--paper:#fffdf8;--ink:#202522;--muted:#747974;--dark:#26352f;--line:#d8d2c7;--soft:#ebe7de;--accent:#9daf9f;--col:160px}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,sans-serif}
+button,input,textarea,select{font:inherit}button{touch-action:manipulation}
+header{background:var(--dark);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-weight:850;letter-spacing:.08em}.brand small{display:block;font-size:9px;font-weight:500;letter-spacing:.02em;opacity:.7;margin-top:3px}
+.btn{border:0;border-radius:9px;padding:10px 13px;background:var(--dark);color:#fff;font-weight:800;cursor:pointer}.btn.white{background:#fff;color:var(--dark)}
+main{padding:14px}.pipelineShell,.reminders{background:var(--paper);border:1px solid var(--line);border-radius:13px}
+.pipelineShell{overflow:hidden}.sectionTitle{padding:11px 12px 8px;font-size:10px;font-weight:900;letter-spacing:.12em;border-bottom:1px solid var(--line)}
+.pipelineScroll{overflow-x:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}
+.pipeline{min-width:calc(var(--col) * 17 + 90px)}
+.stageRow,.laneRow{display:grid;grid-template-columns:90px repeat(17,var(--col))}
+.corner,.laneName{position:sticky;left:0;z-index:4;background:var(--paper);border-right:1px solid var(--line)}
+.corner{border-bottom:1px solid var(--line);background:var(--soft);display:flex;align-items:center;justify-content:center;padding:8px;font-size:9px;font-weight:850;letter-spacing:.08em;text-align:center}
+.stageHead{min-height:68px;padding:8px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);font-size:9px;font-weight:850;line-height:1.25;background:var(--soft)}
+.stageHead span{display:block;font-size:8px;color:var(--muted);margin-bottom:4px}
+.laneName{padding:16px 10px;font-size:10px;font-weight:900;letter-spacing:.09em}
+.stageCell{min-height:150px;padding:9px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);transition:background .12s}
+.stageCell.drop{background:#e4ece5;outline:2px dashed var(--accent);outline-offset:-4px}
+.card{background:#fff;border:1px solid #ccc5ba;border-radius:10px;padding:11px;box-shadow:0 4px 13px rgba(0,0,0,.07);cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none;margin-bottom:8px}
+.card:active{cursor:grabbing}.card strong{display:block}.card small{display:block;color:var(--muted);font-size:9px;margin-top:4px;line-height:1.3}.stageText{font-weight:700}
+.dragGhost{position:fixed;z-index:1000;pointer-events:none;opacity:.88;transform:rotate(2deg);box-shadow:0 12px 25px rgba(0,0,0,.22)}
+.reminders{margin-top:12px;padding:12px}.reminders h3{font-size:10px;letter-spacing:.1em;margin:0 0 9px}.reminderGroup+ .reminderGroup{margin-top:14px}.reminder{border:0;border-radius:8px;background:var(--soft);padding:9px 13px;text-align:left;font-weight:850;margin:0 6px 6px 0;cursor:pointer}.reminder.overdue{color:#d00000;font-weight:950}.privacy{font-size:8px;color:var(--muted);line-height:1.4;margin-top:5px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(25,30,27,.48);z-index:10;align-items:center;justify-content:center;padding:14px}.overlay.open{display:flex}
+.dialog{background:var(--paper);border-radius:14px;padding:18px;width:min(390px,95vw)}.dialog h2{margin:0 0 14px}.field{display:flex;flex-direction:column;gap:5px;font-size:10px;font-weight:750;margin-bottom:10px}.field input,.field select,input,textarea{border:1px solid #d4cec2;border-radius:7px;padding:9px;background:#fff}
+.workspace{width:min(1100px,98vw);height:min(760px,96vh);background:var(--bg);border-radius:15px;overflow:hidden;display:flex;flex-direction:column}.whead{background:var(--dark);color:#fff;padding:13px 17px;display:flex;justify-content:space-between;align-items:center}.whead h2{margin:0;font-size:18px}.whead small{opacity:.7}.close{border:0;background:transparent;color:#fff;font-size:25px;cursor:pointer}
+.wbody{display:grid;grid-template-columns:300px 1fr;gap:12px;padding:12px;overflow:hidden;flex:1}.panel{background:var(--paper);border:1px solid var(--line);border-radius:11px;padding:13px;overflow:auto}.panel h3{font-size:10px;letter-spacing:.1em;margin:0 0 10px}
+.ms{display:grid;grid-template-columns:1fr 120px;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid #eee9e1;font-size:10px}.notes{display:flex;flex-direction:column}.log{flex:1;overflow:auto}
+.note{background:#fff;border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:10px;margin-bottom:8px}.note.flash{background:#fff0b7}.ntop{display:flex;justify-content:space-between;gap:8px;font-size:9px;font-weight:850}.note p{white-space:pre-wrap;font-size:11px;line-height:1.45}.tag{background:#e8eee9;border-radius:20px;padding:3px 6px}
+.borrowerInfoBtn{width:100%;margin-top:12px;background:var(--soft);color:var(--ink);border:1px solid var(--line)}.infoBox{display:none;margin-top:8px;padding:10px;border:1px solid var(--line);border-radius:9px;background:#fff}.infoBox.open{display:block}.systemNote{border-left-color:#6f7b74;background:#f7f7f4}.noteform{border-top:1px solid var(--line);padding-top:9px}.nrow{display:grid;grid-template-columns:110px 1fr;gap:7px}.noteDateDisplay{border:1px solid #d4cec2;border-radius:7px;padding:9px;background:#f3f0e9;font-size:10px;font-weight:800;display:flex;align-items:center}.nrow textarea{height:68px}.follow{display:flex;gap:7px;align-items:center;font-size:10px;margin-top:7px}.empty{font-size:10px;color:var(--muted)}
+@media(max-width:760px){:root{--col:145px}.brand small{max-width:230px}.workspace{height:97vh}.wbody{grid-template-columns:1fr;overflow:auto}.panel{overflow:visible}.stageRow,.laneRow{grid-template-columns:72px repeat(17,var(--col))}.pipeline{min-width:calc(var(--col) * 17 + 72px)}.corner,.laneName{width:72px}.laneName{padding:14px 7px;font-size:9px}}
+</style></head><body>
+<header><div class="brand">RECapp™ <small>Residential Ecosystem Capture of Application Processing and Procedures • v0.3.0</small></div><button id="addBorrowerBtn" class="btn white">+ ADD BORROWER</button></header>
+<main>
+<section class="pipelineShell">
+<div class="sectionTitle">LOAN FLOW</div>
+<div class="pipelineScroll" id="pipelineScroll"><div class="pipeline">
+<div class="stageRow"><div class="corner">LOAN TYPE</div><div id="stageHeaders" style="display:contents"></div></div>
+<div class="laneRow"><div class="laneName">PURCHASE</div><div id="purchaseGrid" style="display:contents"></div></div>
+<div class="laneRow"><div class="laneName">REFINANCE</div><div id="refinanceGrid" style="display:contents"></div></div>
+</div></div>
+</section>
+<section class="reminders"><div class="reminderGroup"><h3>TODAY'S REMINDERS</h3><div id="reminders"></div></div><div class="reminderGroup"><h3>THIS WEEK'S REMINDERS</h3><div id="weekReminders"></div></div><div class="privacy">Privacy view: only borrower last names and follow-up dates appear here. Details remain inside the borrower card.</div></section>
+</main>
+<div class="overlay" id="addOverlay"><div class="dialog">
+<h2>Create Borrower Card</h2>
+<div class="field"><label>Borrower first name</label><input id="firstName" placeholder="CAITLIN"></div>
+<div class="field"><label>Borrower last name</label><input id="lastName" placeholder="JOHNSON"></div>
+<div class="field"><label>Purchase / Refinance</label><select id="loanType"><option value="purchase">Purchase</option><option value="refinance">Refinance</option></select></div>
+<div class="field"><label>Loan program / quick label</label><input id="program" placeholder="Conventional, FHA, VA, DSCR…"></div>
+<div style="display:flex;gap:8px"><button id="createBtn" class="btn">CREATE CARD</button><button id="cancelBtn" class="btn" style="background:#aaa">CANCEL</button></div>
+</div></div>
+
+<div class="overlay" id="workspaceOverlay"><div class="workspace">
+<div class="whead"><div><h2 id="borrowerTitle"></h2><small id="borrowerStage"></small></div><button id="closeWorkspace" class="close">×</button></div>
+<div class="wbody">
+<section class="panel"><h3>KEY DATES & MILESTONES</h3><div id="milestones"></div>
+<button id="borrowerInfoBtn" class="btn borrowerInfoBtn">BORROWER INFO</button>
+<div id="borrowerInfoBox" class="infoBox">
+<div class="field"><label>Borrower first name</label><input id="editBorrowerFirstName"></div>
+<div class="field"><label>Borrower last name</label><input id="editBorrowerLastName"></div>
+<div class="field"><label>Purchase / Refinance</label><select id="editTransactionType"><option value="purchase">Purchase</option><option value="refinance">Refinance</option></select></div>
+<div class="field"><label>Loan program / type</label><input id="editProgram" placeholder="Conventional, FHA, VA, USDA…"></div>
+<div class="field"><label>Borrower phone</label><input id="editBorrowerPhone" type="tel" placeholder="(703) 555-0123"></div>
+<div class="field"><label>Borrower email</label><input id="editBorrowerEmail" type="email" placeholder="borrower@example.com"></div>
+<div class="field"><label>Co-borrower phone</label><input id="editCoBorrowerPhone" type="tel" placeholder="(703) 555-0124"></div>
+<div class="field"><label>Co-borrower email</label><input id="editCoBorrowerEmail" type="email" placeholder="coborrower@example.com"></div>
+<button id="saveBorrowerInfo" class="btn">SAVE CHANGES</button>
+</div></section>
+<section class="panel notes"><h3>RUNNING FILE NOTES</h3><div id="notesLog" class="log"></div>
+<div class="noteform"><div class="nrow"><div id="noteDate" class="noteDateDisplay"></div><textarea id="noteText" placeholder="Start with the loan structure, then keep the running file history here…"></textarea></div>
+<div class="follow"><label><input type="checkbox" id="followCheck"> Follow up</label><input type="date" id="followDate" disabled><button id="addNoteBtn" class="btn">ADD NOTE</button></div></div>
+</section>
+</div></div></div>
+
+<script>
+(function(){
+const STAGES=["Application Taken","Pre-Approved","Ratified Contract / Approved","Collecting Upfront Documentation for Submission","Submitted to Underwriting","Appraisal Ordered","In Underwriting","Conditional Approval","CD Out","Collecting Conditions","Submitted Back to Underwriting — First Pass","Updated Conditional Approval","Submitted Back to Underwriting — Second Pass","Conditions Cleared","CTC","Settlement Date / Borrowers Contacted","Funded"];
+const MS=["Rate Lock Expiration","CD Out","Title Ordered","HOA / Hazard Collected","Appraisal Ordered","Expected Appraisal Delivery","Contract Contingency","Settlement Date"];
+const today=()=>new Date().toISOString().slice(0,10);
+let db={loans:[]},active=null,jump=null,draggingLoanId=null;
+try{
+  db=JSON.parse(localStorage.getItem("recapp029"))||
+     JSON.parse(localStorage.getItem("recapp028"))||
+     JSON.parse(localStorage.getItem("recapp026"))||
+     JSON.parse(localStorage.getItem("recapp025"))||
+     JSON.parse(localStorage.getItem("recapp024"))||
+     JSON.parse(localStorage.getItem("recapp023"))||
+     JSON.parse(localStorage.getItem("recapp022"))||
+     JSON.parse(localStorage.getItem("recapp021"))||db
+}catch(e){}
+function save(){try{localStorage.setItem("recapp029",JSON.stringify(db))}catch(e){}}
+function el(id){return document.getElementById(id)}
+function render(){
+ const head=el("stageHeaders"),p=el("purchaseGrid"),r=el("refinanceGrid");
+ head.innerHTML="";p.innerHTML="";r.innerHTML="";
+ STAGES.forEach((s,i)=>{
+   let h=document.createElement("div");h.className="stageHead";h.textContent=s;head.appendChild(h);
+   [p,r].forEach((row,ri)=>{
+     let cell=document.createElement("div");cell.className="stageCell";cell.dataset.stage=i;cell.dataset.type=ri===0?"purchase":"refinance";
+     cell.addEventListener("dragover",e=>{let l=db.loans.find(x=>x.id===draggingLoanId);if(!l||l.type!==cell.dataset.type)return;e.preventDefault();if(e.dataTransfer)e.dataTransfer.dropEffect="move";cell.classList.add("drop")});
+     cell.addEventListener("dragleave",()=>cell.classList.remove("drop"));
+     cell.addEventListener("drop",e=>{e.preventDefault();cell.classList.remove("drop");let id=draggingLoanId||(e.dataTransfer&&e.dataTransfer.getData("text/plain"));if(id)dropLoan(id,i,cell.dataset.type)});
+     row.appendChild(cell);
+   });
+ });
+ db.loans.forEach(l=>{
+   let c=document.createElement("div");c.className="card";c.draggable=true;c.dataset.loan=l.id;
+   c.innerHTML="<strong>"+safe(l.last)+"</strong><small>"+safe(l.program||"")+"</small><small class='stageText'>"+safe(STAGES[l.stage])+"</small>";
+   c.addEventListener("click",e=>{if(!c.dataset.dragged)openWorkspace(l.id);delete c.dataset.dragged});
+   c.addEventListener("dragstart",e=>{c.dataset.dragged="1";draggingLoanId=l.id;e.dataTransfer.setData("text/plain",l.id);e.dataTransfer.effectAllowed="move"});
+   c.addEventListener("dragend",()=>{draggingLoanId=null;document.querySelectorAll(".stageCell.drop").forEach(x=>x.classList.remove("drop"));setTimeout(()=>delete c.dataset.dragged,0)});
+   addPointerDrag(c,l);
+   let row=l.type==="refinance"?r:p;
+   row.children[l.stage].appendChild(c);
+ });
+ renderReminders();
+}
+const stageTimers={};
+function dropLoan(id,stage,type){
+ let l=db.loans.find(x=>x.id===id);if(!l)return;
+ // Dragging changes stage only. Transaction lane is deliberately locked.
+ if(type!==l.type)return;
+ const originalStage=(l._pendingStage&&l._pendingStage.originalStage!==undefined)?l._pendingStage.originalStage:l.stage;
+ l.stage=stage;
+ l._pendingStage={originalStage:originalStage,targetStage:stage,started:Date.now()};
+ if(stageTimers[id])clearTimeout(stageTimers[id]);
+ save();render();
+ stageTimers[id]=setTimeout(()=>commitStage(id),10000);
+}
+function commitStage(id){
+ let l=db.loans.find(x=>x.id===id);if(!l||!l._pendingStage)return;
+ let p=l._pendingStage;
+ if(l.stage===p.targetStage && p.originalStage!==p.targetStage){
+   l.notes=l.notes||[];
+   l.notes.push({id:"n"+Date.now(),date:today(),text:"LOAN STAGE UPDATED\n"+STAGES[p.originalStage]+" → "+STAGES[p.targetStage],system:true,done:false});
+ }
+ delete l._pendingStage;delete stageTimers[id];save();render();
+}
+function cellAtPoint(x,y,loanType){
+ const cells=[...document.querySelectorAll('.stageCell')].filter(c=>c.dataset.type===loanType);
+ return cells.find(c=>{const r=c.getBoundingClientRect();return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom})||null;
+}
+function addPointerDrag(card,loan){
+ let active=false,startX=0,startY=0,ghost=null,lastX=0,lastY=0,ghostTop=0;
+ card.addEventListener("pointerdown",e=>{
+   if(e.pointerType==="mouse") return;
+   active=true;startX=e.clientX;startY=e.clientY;lastX=e.clientX;lastY=e.clientY;ghostTop=card.getBoundingClientRect().top;try{card.setPointerCapture(e.pointerId)}catch(_){}
+ });
+ card.addEventListener("pointermove",e=>{
+   if(!active)return;
+   lastX=e.clientX;lastY=e.clientY;let dx=e.clientX-startX,dy=e.clientY-startY;
+   if(!ghost && Math.hypot(dx,dy)>10){
+     card.dataset.dragged="1";
+     ghost=card.cloneNode(true);ghost.classList.add("dragGhost");
+     ghost.style.width=card.getBoundingClientRect().width+"px";
+     ghost.style.top=ghostTop+"px";
+     document.body.appendChild(ghost);
+   }
+   if(ghost){e.preventDefault();ghost.style.left=(e.clientX+10)+"px";ghost.style.top=ghostTop+"px";
+     let sc=el("pipelineScroll"),rect=sc.getBoundingClientRect(),edge=70;
+     if(e.clientX>rect.right-edge)sc.scrollLeft+=24;
+     if(e.clientX<rect.left+edge)sc.scrollLeft-=24;
+     document.querySelectorAll(".stageCell.drop").forEach(x=>x.classList.remove("drop"));
+     let hover=cellAtPoint(e.clientX,startY,loan.type);
+     if(hover&&hover.dataset.type===loan.type)hover.classList.add("drop");
+   }
+ });
+ function finish(e){
+   if(!active)return;active=false;
+   if(ghost){
+     ghost.remove();ghost=null;
+     let x=Number.isFinite(e.clientX)?e.clientX:lastX;
+     let cell=cellAtPoint(x,startY,loan.type);
+     document.querySelectorAll(".stageCell.drop").forEach(x=>x.classList.remove("drop"));
+     if(cell&&cell.dataset.type===loan.type)dropLoan(loan.id,Number(cell.dataset.stage),cell.dataset.type);
+     setTimeout(()=>delete card.dataset.dragged,50);
+   }
+ }
+ card.addEventListener("pointerup",finish);card.addEventListener("pointercancel",finish);
+}
+function openAdd(){el("addOverlay").classList.add("open");setTimeout(()=>el("firstName").focus(),50)}
+function closeAdd(){el("addOverlay").classList.remove("open")}
+function create(){
+ let first=el("firstName").value.trim(),last=el("lastName").value.trim();
+ if(!first||!last){alert("Enter the borrower's first and last name.");return}
+ db.loans.push({id:"l"+Date.now(),first:first.toUpperCase(),last:last.toUpperCase(),type:el("loanType").value,program:el("program").value.trim(),stage:0,milestones:{},notes:[]});
+ save();el("firstName").value="";el("lastName").value="";el("program").value="";closeAdd();render();
+}
+function openWorkspace(id){
+ active=db.loans.find(x=>x.id===id);if(!active)return;
+ el("borrowerTitle").textContent=active.last;el("borrowerStage").textContent=STAGES[active.stage];
+ renderMilestones();renderNotes();el("noteDate").textContent=today();populateBorrowerInfo();el("workspaceOverlay").classList.add("open");
+ if(jump)setTimeout(()=>{let n=el("note-"+jump);if(n){n.scrollIntoView({behavior:"smooth",block:"center"});n.classList.add("flash")}jump=null},100)
+}
+function renderMilestones(){
+ el("milestones").innerHTML="";
+ MS.forEach(m=>{let r=document.createElement("div");r.className="ms";r.innerHTML="<label>"+safe(m)+"</label><input type='date'>";let i=r.querySelector("input");i.value=active.milestones[m]||"";i.addEventListener("change",()=>{active.milestones[m]=i.value;save()});el("milestones").appendChild(r)})
+}
+function populateBorrowerInfo(){
+ if(!active)return;
+ el("editBorrowerFirstName").value=active.first||"";
+ el("editBorrowerLastName").value=active.last||"";
+ el("editTransactionType").value=active.type||"purchase";
+ el("editProgram").value=active.program||"";
+ el("editBorrowerPhone").value=active.borrowerPhone||"";
+ el("editBorrowerEmail").value=active.borrowerEmail||"";
+ el("editCoBorrowerPhone").value=active.coBorrowerPhone||"";
+ el("editCoBorrowerEmail").value=active.coBorrowerEmail||"";
+}
+function saveBorrowerInfo(){
+ if(!active)return;
+ const changes=[];
+ const first=el("editBorrowerFirstName").value.trim().toUpperCase();
+ const last=el("editBorrowerLastName").value.trim().toUpperCase();
+ const type=el("editTransactionType").value;
+ const program=el("editProgram").value.trim();
+ const borrowerPhone=el("editBorrowerPhone").value.trim();
+ const borrowerEmail=el("editBorrowerEmail").value.trim();
+ const coBorrowerPhone=el("editCoBorrowerPhone").value.trim();
+ const coBorrowerEmail=el("editCoBorrowerEmail").value.trim();
+ if(!first||!last){alert("Borrower first and last name cannot be blank.");return}
+ if(first!==(active.first||""))changes.push("Borrower first name: "+(active.first||"—")+" → "+first);
+ if(last!==active.last)changes.push("Borrower last name: "+active.last+" → "+last);
+ if(type!==active.type)changes.push("Transaction type: "+(active.type==="purchase"?"Purchase":"Refinance")+" → "+(type==="purchase"?"Purchase":"Refinance"));
+ if(program!==active.program)changes.push("Loan program/type: "+(active.program||"—")+" → "+(program||"—"));
+ if(borrowerPhone!==(active.borrowerPhone||""))changes.push("Borrower phone: "+(active.borrowerPhone||"—")+" → "+(borrowerPhone||"—"));
+ if(borrowerEmail!==(active.borrowerEmail||""))changes.push("Borrower email: "+(active.borrowerEmail||"—")+" → "+(borrowerEmail||"—"));
+ if(coBorrowerPhone!==(active.coBorrowerPhone||""))changes.push("Co-borrower phone: "+(active.coBorrowerPhone||"—")+" → "+(coBorrowerPhone||"—"));
+ if(coBorrowerEmail!==(active.coBorrowerEmail||""))changes.push("Co-borrower email: "+(active.coBorrowerEmail||"—")+" → "+(coBorrowerEmail||"—"));
+ if(!changes.length){el("borrowerInfoBox").classList.remove("open");return;}
+ active.first=first;active.last=last;active.type=type;active.program=program;active.borrowerPhone=borrowerPhone;active.borrowerEmail=borrowerEmail;active.coBorrowerPhone=coBorrowerPhone;active.coBorrowerEmail=coBorrowerEmail;
+ active.notes=active.notes||[];
+ active.notes.push({id:"n"+Date.now(),date:today(),text:"BORROWER INFO UPDATED\n"+changes.join("\n"),system:true,done:false});
+ save();el("borrowerTitle").textContent=active.last;renderNotes();render();populateBorrowerInfo();el("borrowerInfoBox").classList.remove("open");
+}
+function renderNotes(){
+ let box=el("notesLog");box.innerHTML="";
+ if(!active.notes.length){box.innerHTML="<div class='empty'>No notes yet. Your first note can be the complete loan structure.</div>";return}
+ active.notes.slice().sort((a,b)=>(a.date||"").localeCompare(b.date||"")).forEach(n=>{
+  let d=document.createElement("div");d.className="note"+(n.system?" systemNote":"");d.id="note-"+n.id;
+  let status="";
+  if(n.follow){if(n.done)status="✓ COMPLETE";else if(n.incomplete)status="INCOMPLETE";else status="Follow up "+safe(n.follow)}
+  d.innerHTML="<div class='ntop'><span>"+safe(n.date)+"</span>"+(status?"<span class='tag'>"+status+"</span>":"")+"</div><p>"+safe(n.text)+"</p>";
+  if(n.follow&&!n.done&&!n.incomplete){
+    let c=document.createElement("button");c.className="btn";c.style.cssText="font-size:9px;padding:6px 8px;margin-right:6px";c.textContent="COMPLETE";c.addEventListener("click",()=>{n.done=true;n.completedDate=today();save();renderNotes();renderReminders()});d.appendChild(c);
+    if(n.follow<today()){
+      let ib=document.createElement("button");ib.className="btn";ib.style.cssText="font-size:9px;padding:6px 8px;background:#8b2e2e";ib.textContent="INCOMPLETE";ib.addEventListener("click",()=>{
+        let why=prompt("Why was this follow-up incomplete? A new note will be required for the next follow-up.");
+        if(why===null)return;if(!why.trim()){alert("Please document why the follow-up was incomplete.");return}
+        n.incomplete=true;n.incompleteDate=today();n.incompleteReason=why.trim();
+        active.notes.push({id:"n"+Date.now(),date:today(),text:"FOLLOW-UP INCOMPLETE\nOriginal follow-up: "+n.follow+"\nReason: "+why.trim(),system:true,done:false});
+        save();renderNotes();renderReminders();el("noteText").focus();
+      });d.appendChild(ib);
+    }
+  }
+  box.appendChild(d)
+ })
+}
+function addNote(){
+ let t=el("noteText").value.trim();if(!t||!active)return;
+ let wants=el("followCheck").checked;let f=wants?el("followDate").value:null;
+ if(wants&&!f){alert("Choose a follow-up date.");return}
+ active.notes.push({id:"n"+Date.now(),date:today(),text:t,follow:f,done:false,incomplete:false});
+ el("noteText").value="";el("followCheck").checked=false;el("followDate").value="";el("followDate").disabled=true;save();renderNotes();renderReminders()
+}
+function renderReminders(){
+ let td=today(),limit=new Date(td+"T00:00:00");limit.setDate(limit.getDate()+7);let max=limit.toISOString().slice(0,10);
+ let due=[],week=[];
+ db.loans.forEach(l=>(l.notes||[]).forEach(n=>{if(!n.follow||n.done||n.incomplete)return;let x={l,n};if(n.follow<=td)due.push(x);else if(n.follow<=max)week.push(x)}));
+ function fill(id,items,empty){let box=el(id);box.innerHTML="";if(!items.length){box.innerHTML="<div class='empty'>"+empty+"</div>";return}items.sort((a,b)=>a.n.follow.localeCompare(b.n.follow)||a.l.last.localeCompare(b.l.last)).forEach(x=>{let b=document.createElement("button");b.className="reminder"+(x.n.follow<td?" overdue":"");b.textContent=x.l.last+" — "+formatDate(x.n.follow);b.addEventListener("click",()=>{jump=x.n.id;openWorkspace(x.l.id)});box.appendChild(b)})}
+ fill("reminders",due,"No reminders due today.");fill("weekReminders",week,"No reminders in the next 7 days.");
+}
+function formatDate(d){if(!d)return"";let [y,m,day]=d.split("-");return m+"/"+day+"/"+y}
+function safe(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+el("addBorrowerBtn").addEventListener("click",openAdd);el("cancelBtn").addEventListener("click",closeAdd);el("createBtn").addEventListener("click",create);
+el("closeWorkspace").addEventListener("click",()=>el("workspaceOverlay").classList.remove("open"));
+el("followCheck").addEventListener("change",e=>el("followDate").disabled=!e.target.checked);el("addNoteBtn").addEventListener("click",addNote);el("borrowerInfoBtn").addEventListener("click",()=>el("borrowerInfoBox").classList.toggle("open"));el("saveBorrowerInfo").addEventListener("click",saveBorrowerInfo);
+db.loans.forEach(l=>{if(l._pendingStage){let elapsed=Date.now()-(l._pendingStage.started||0);let left=Math.max(0,10000-elapsed);stageTimers[l.id]=setTimeout(()=>commitStage(l.id),left)}});
+render();
+})();
+</script></body></html>
